@@ -1,0 +1,21 @@
+{
+  "disabledTools": [
+    "Read",
+    "Write",
+    "Edit",
+    "Bash",
+    "Glob",
+    "Grep",
+    "Task",
+    "NotebookEdit",
+    "WebFetch",
+    "TodoWrite",
+    "WebSearch",
+    "BashOutput",
+    "KillShell",
+    "Skill",
+    "SlashCommand",
+    "ExitPlanMode"
+  ],
+  "note": "This configuration disables all tools to make Claude Code behave like a chat-only assistant, compatible with OpenAI ChatCompletion API"
+}
