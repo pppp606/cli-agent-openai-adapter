@@ -315,12 +315,24 @@ The project uses Jest for testing with full TypeScript support. All tests are lo
 
 ### Continuous Integration
 
-The project uses GitHub Actions for CI/CD. On every push and pull request:
-- Tests run on Node.js 18.x, 20.x, and 22.x
-- Code coverage is generated and uploaded to Codecov
-- Build is verified
+A GitHub Actions workflow template is provided in `.workflows-template/test.yml`.
 
-See `.github/workflows/test.yml` for the full CI configuration.
+**To enable CI, manually copy the workflow file:**
+
+```bash
+mkdir -p .github/workflows
+cp .workflows-template/test.yml .github/workflows/test.yml
+git add .github/workflows/test.yml
+git commit -m "Add CI workflow"
+git push
+```
+
+Or create it directly on GitHub's web interface.
+
+**The workflow includes:**
+- Tests run on Node.js 18.x, 20.x, and 22.x
+- Code coverage generation and upload to Codecov
+- Build verification
 
 ### Project Structure
 
