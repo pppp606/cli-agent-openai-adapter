@@ -1,5 +1,8 @@
 # cli-agent-openai-adapter
 
+[![Test](https://github.com/pppp606/cli-agent-openai-adapter/actions/workflows/test.yml/badge.svg)](https://github.com/pppp606/cli-agent-openai-adapter/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Convert CLI-based AI agents (Claude Code, etc.) to OpenAI-compatible API endpoints.
 
 ## Overview
@@ -294,6 +297,30 @@ npm run dev
 ```bash
 npm run build
 ```
+
+### Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+The project uses Jest for testing with full TypeScript support. All tests are located in `src/__tests__/` directory.
+
+### Continuous Integration
+
+The project uses GitHub Actions for CI/CD. On every push and pull request:
+- Tests run on Node.js 18.x, 20.x, and 22.x
+- Code coverage is generated and uploaded to Codecov
+- Build is verified
+
+See `.github/workflows/test.yml` for the full CI configuration.
 
 ### Project Structure
 
