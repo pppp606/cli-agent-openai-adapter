@@ -355,14 +355,6 @@ This tool is provided under the MIT License.
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
 
-## Related Projects
-
-- [claude-ops-mcp](https://github.com/pppp606/claude-ops-mcp) - MCP server for Claude Code operations
-
-## Author
-
-Created by pppp606
-
 ---
 
 **Note:** This is an early implementation. The actual behavior of Claude Code CLI options may require adjustments. Please test in your environment and report any issues.
