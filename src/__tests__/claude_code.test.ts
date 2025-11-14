@@ -140,7 +140,7 @@ describe('ClaudeCodeAdapter', () => {
 
       // Check that conversation history is included
       const callArgs = mockExecFile.mock.calls[0];
-      const userPrompt = callArgs[1][4]; // -p argument value
+      const userPrompt = callArgs?.[1]?.[4]; // -p argument value
       expect(userPrompt).toContain('Conversation history:');
       expect(userPrompt).toContain('My favorite color is blue');
       expect(userPrompt).toContain('That is nice!');
