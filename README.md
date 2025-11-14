@@ -36,7 +36,7 @@ npx cli-agent-openai-adapter
 
 ## Prerequisites
 
-- Node.js >= 18.0.0
+- Node.js >= 20.0.0
 - Claude Code CLI installed and accessible in PATH
 
 To verify Claude Code is installed:
