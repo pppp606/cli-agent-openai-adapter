@@ -22,6 +22,18 @@ This adapter allows you to use local CLI tools like Claude Code as drop-in repla
 - 🔜 Codex adapter (future)
 - 🔜 Gemini CLI adapter (future)
 
+## Demo
+
+See the adapter in action with [Open WebUI](examples/open-webui) - a ChatGPT-like web interface powered by Claude Code:
+
+```bash
+cd examples/open-webui
+docker compose up -d
+# Open http://localhost:3000 in your browser
+```
+
+[→ View Demo Documentation](examples/open-webui/README.md)
+
 ## Installation
 
 ```bash
