@@ -74,13 +74,9 @@ export class ClaudeCodeAdapter extends CLIAdapter {
     } as const;
 
     // Primary invocation: current CLI (non-interactive):
-    // `claude --system-prompt <system> --print <userPrompt>`
+    // `claude --system-prompt <system> -p <userPrompt>`
     try {
-      const result = await execFile(
-        'claude',
-        ['--system-prompt', systemPrompt, '--print', userPrompt],
-        commonOpts
-      );
+      const result = await execFile('claude', ['--system-prompt', systemPrompt, '-p', userPrompt], commonOpts);
 
       if (this.debug) {
         console.log('[DEBUG] Raw Output:', result.stdout);
