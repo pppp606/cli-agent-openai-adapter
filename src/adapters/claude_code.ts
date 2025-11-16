@@ -73,11 +73,12 @@ export class ClaudeCodeAdapter extends CLIAdapter {
       maxBuffer: 10 * 1024 * 1024, // 10MB
     } as const;
 
-    // Primary invocation: `claude code ...`
+    // Primary invocation: current CLI (non-interactive):
+    // `claude --system-prompt <system> --print <userPrompt>`
     try {
       const result = await execFile(
         'claude',
-        ['code', '--system-prompt', systemPrompt, '-p', userPrompt],
+        ['--system-prompt', systemPrompt, '--print', userPrompt],
         commonOpts
       );
 
@@ -92,25 +93,21 @@ export class ClaudeCodeAdapter extends CLIAdapter {
         throw new TimeoutError('Claude Code execution timed out');
       }
 
-      // Some installations suggest using plain `claude` instead of `claude code`
+      // Fallback to legacy subcommand style: `claude code ...`
       const stderr: string = (error && error.stderr) || '';
-      const suggestsPlainClaude = /just `?claude`?/i.test(stderr) || /\bunknown command\b.*code/i.test(stderr);
+      const suggestsLegacyCode = /\bunknown option\b.*--print/i.test(stderr) || /\bcode\b subcommand required/i.test(stderr);
       const maybeTerminated = (error && (error.code === 143 || error.code === 1)) && !error.signal;
 
       if (this.debug) {
         console.warn('[DEBUG] Primary invocation failed, stderr:', stderr);
       }
 
-      if (suggestsPlainClaude || maybeTerminated) {
+      if (suggestsLegacyCode || maybeTerminated) {
         if (this.debug) {
-          console.log('[DEBUG] Falling back to plain `claude` invocation');
+          console.log('[DEBUG] Falling back to legacy `claude code` invocation');
         }
         try {
-          const fallback = await execFile(
-            'claude',
-            ['--system-prompt', systemPrompt, '--print', userPrompt],
-            commonOpts
-          );
+          const fallback = await execFile('claude', ['code', '--system-prompt', systemPrompt, '-p', userPrompt], commonOpts);
           if (this.debug) {
             console.log('[DEBUG] Raw Output (fallback):', fallback.stdout);
           }

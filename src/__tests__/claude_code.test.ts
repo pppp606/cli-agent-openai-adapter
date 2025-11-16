@@ -64,7 +64,7 @@ describe('ClaudeCodeAdapter', () => {
   });
 
   describe('execute', () => {
-    it('should execute claude code with single user message', async () => {
+    it('should execute claude with single user message (print mode)', async () => {
       const messages: Message[] = [
         { role: 'user', content: 'Hello!' },
       ];
@@ -80,10 +80,9 @@ describe('ClaudeCodeAdapter', () => {
       expect(mockExecFile).toHaveBeenCalledWith(
         'claude',
         [
-          'code',
           '--system-prompt',
           expect.stringContaining('participating in a conversation'),
-          '-p',
+          '--print',
           'Current user message: Hello!',
         ],
         expect.objectContaining({
@@ -94,7 +93,7 @@ describe('ClaudeCodeAdapter', () => {
       );
     });
 
-    it('should execute claude code with system message', async () => {
+    it('should execute claude with system message (print mode)', async () => {
       const messages: Message[] = [
         { role: 'system', content: 'You are a helpful assistant.' },
         { role: 'user', content: 'Hello!' },
@@ -111,10 +110,9 @@ describe('ClaudeCodeAdapter', () => {
       expect(mockExecFile).toHaveBeenCalledWith(
         'claude',
         [
-          'code',
           '--system-prompt',
           expect.stringContaining('You are a helpful assistant'),
-          '-p',
+          '--print',
           'Current user message: Hello!',
         ],
         expect.any(Object),
@@ -140,7 +138,7 @@ describe('ClaudeCodeAdapter', () => {
 
       // Check that conversation history is included
       const callArgs = mockExecFile.mock.calls[0];
-      const userPrompt = callArgs?.[1]?.[4]; // -p argument value
+      const userPrompt = callArgs?.[1]?.[3]; // '--print' is index 2, prompt is index 3
       expect(userPrompt).toContain('Conversation history:');
       expect(userPrompt).toContain('My favorite color is blue');
       expect(userPrompt).toContain('That is nice!');
