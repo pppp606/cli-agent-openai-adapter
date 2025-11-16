@@ -28,15 +28,19 @@ async function main() {
     process.exit(1);
   }
 
-  // Check if adapter is available
+  // Check if adapter is available (allow bypass via env for demos)
   const isAvailable = await adapter.isAvailable();
   if (!isAvailable) {
-    console.error(`❌ ${adapter.getName()} is not available`);
-    console.error('   Please make sure the CLI tool is installed and accessible in PATH');
-    process.exit(1);
+    if (process.env.ALLOW_START_WITHOUT_CLI === 'true') {
+      console.warn(`⚠️  ${adapter.getName()} not found. Starting server anyway (ALLOW_START_WITHOUT_CLI=true).`);
+    } else {
+      console.error(`❌ ${adapter.getName()} is not available`);
+      console.error('   Please make sure the CLI tool is installed and accessible in PATH');
+      process.exit(1);
+    }
+  } else {
+    console.log(`✅ ${adapter.getName()} is available\n`);
   }
-
-  console.log(`✅ ${adapter.getName()} is available\n`);
 
   // Create and start server
   const app = createServer(adapter);
