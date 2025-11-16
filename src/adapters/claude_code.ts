@@ -108,7 +108,7 @@ export class ClaudeCodeAdapter extends CLIAdapter {
         try {
           const fallback = await execFile(
             'claude',
-            ['--system-prompt', systemPrompt, '-p', userPrompt],
+            ['--system-prompt', systemPrompt, '--print', userPrompt],
             commonOpts
           );
           if (this.debug) {
