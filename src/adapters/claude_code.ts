@@ -62,6 +62,8 @@ export class ClaudeCodeAdapter extends CLIAdapter {
   async execute(messages: Message[]): Promise<string> {
     const { systemPrompt, userPrompt } = this.buildClaudeCodeCommand(messages);
 
+    const t0 = Date.now();
+
     if (this.debug) {
       console.log('[DEBUG] System Prompt:', systemPrompt);
       console.log('[DEBUG] User Prompt:', userPrompt);
@@ -76,10 +78,14 @@ export class ClaudeCodeAdapter extends CLIAdapter {
     // Primary invocation: current CLI (non-interactive):
     // `claude --system-prompt <system> -p <userPrompt>`
     try {
+      if (this.debug) {
+        console.log('[DEBUG] Exec command:', 'claude', '--system-prompt', quote(summarize(systemPrompt)), '-p', quote(summarize(userPrompt)));
+      }
       const result = await execFile('claude', ['--system-prompt', systemPrompt, '-p', userPrompt], commonOpts);
 
       if (this.debug) {
         console.log('[DEBUG] Raw Output:', result.stdout);
+        console.log('[DEBUG] Duration (ms):', Date.now() - t0);
       }
 
       return this.cleanOutput(result.stdout);
@@ -88,33 +94,11 @@ export class ClaudeCodeAdapter extends CLIAdapter {
       if (error.killed && error.signal === 'SIGTERM') {
         throw new TimeoutError('Claude Code execution timed out');
       }
-
-      // Fallback to legacy subcommand style: `claude code ...`
-      const stderr: string = (error && error.stderr) || '';
-      const suggestsLegacyCode = /\bunknown option\b.*--print/i.test(stderr) || /\bcode\b subcommand required/i.test(stderr);
-      const maybeTerminated = (error && (error.code === 143 || error.code === 1)) && !error.signal;
-
       if (this.debug) {
-        console.warn('[DEBUG] Primary invocation failed, stderr:', stderr);
+        const stderr: string = (error && error.stderr) || '';
+        console.warn('[DEBUG] Invocation failed (no fallback). stderr:', stderr);
       }
-
-      if (suggestsLegacyCode || maybeTerminated) {
-        if (this.debug) {
-          console.log('[DEBUG] Falling back to legacy `claude code` invocation');
-        }
-        try {
-          const fallback = await execFile('claude', ['code', '--system-prompt', systemPrompt, '-p', userPrompt], commonOpts);
-          if (this.debug) {
-            console.log('[DEBUG] Raw Output (fallback):', fallback.stdout);
-          }
-          return this.cleanOutput(fallback.stdout);
-        } catch (fallbackError: any) {
-          // If fallback also failed, throw the fallback error for more context
-          throw fallbackError;
-        }
-      }
-
-      // Unknown error path: rethrow original
+      // Rethrow original error
       throw error;
     }
   }
@@ -181,4 +165,19 @@ export class ClaudeCodeAdapter extends CLIAdapter {
 
     return cleaned;
   }
+
+}
+
+/**
+ * Summarize long prompts in debug logs to keep output readable
+ */
+function summarize(text: string, max = 80): string {
+  if (!text) return '';
+  const clean = text.replace(/\s+/g, ' ').trim();
+  return clean.length > max ? clean.slice(0, max) + '…' : clean;
+}
+
+function quote(s: string): string {
+  // Use JSON stringify to show quotes safely in logs
+  return JSON.stringify(s);
 }
