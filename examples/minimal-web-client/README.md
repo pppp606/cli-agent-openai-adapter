@@ -22,14 +22,6 @@ Health check:
 curl http://localhost:8000/health
 ```
 
-Notes:
-- 別プロセスで Claude Code を立ち上げる必要はありません。各リクエスト時に内部で `claude code ...` を実行します。
-- もし CLI 未導入でサーバーだけ起動したい場合（疎通確認用）:
-  ```bash
-  ALLOW_START_WITHOUT_CLI=true npm start
-  ```
-  実際の応答は CLI がないと行えません。
-
 ## Open the client
 
 - Open `examples/minimal-web-client/index.html` in your browser (double-click or drag-drop)
