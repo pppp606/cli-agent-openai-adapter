@@ -1,0 +1,35 @@
+
+> cli-agent-openai-adapter@0.1.0 start
+> node dist/bin/cli.js
+
+🚀 CLI Agent OpenAI Adapter
+==============================
+
+Configuration:
+  Adapter: claude-code
+  Runtime: /Users/yuki.t/Dev/cli-agent-openai-adapter/runtime/claude-code
+  Timeout: 30000ms
+  Debug: false
+  Server: http://0.0.0.0:8000
+
+⚠️  claude-code not found. Starting server anyway (ALLOW_START_WITHOUT_CLI=true).
+node:events:492
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EPERM: operation not permitted 0.0.0.0:8000
+    at Server.setupListenHandle [as _listen2] (node:net:1855:21)
+    at listenInCluster (node:net:1920:12)
+    at doListen (node:net:2069:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1899:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EPERM',
+  errno: -1,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 8000
+}
+
+Node.js v20.5.0

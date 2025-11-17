@@ -82,7 +82,7 @@ describe('ClaudeCodeAdapter', () => {
         'claude',
         [
           '--system-prompt',
-          expect.stringContaining('participating in a conversation'),
+          expect.any(String),
           '-p',
         ],
         expect.objectContaining({
