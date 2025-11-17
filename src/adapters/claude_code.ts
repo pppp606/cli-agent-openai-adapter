@@ -79,9 +79,31 @@ export class ClaudeCodeAdapter extends CLIAdapter {
     // `claude --system-prompt <system> -p <userPrompt>`
     try {
       if (this.debug) {
-        console.log('[DEBUG] Exec command:', 'claude', '--system-prompt', quote(summarize(systemPrompt)), '-p', quote(summarize(userPrompt)));
+        console.log('[DEBUG] Exec command (stdin mode):', 'claude', '--system-prompt', quote(summarize(systemPrompt)), '-p');
+        console.log('[DEBUG] Prompt (stdin):', quote(summarize(userPrompt)));
       }
-      const result = await execFile('claude', ['--system-prompt', systemPrompt, '-p', userPrompt], commonOpts);
+
+      // Use stdin to pass the user prompt to avoid any quoting ambiguity
+      const result = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        const child = execFileCb(
+          'claude',
+          ['--system-prompt', systemPrompt, '-p'],
+          commonOpts as any,
+          (err, stdout, stderr) => {
+            if (err) {
+              (err as any).stderr = stderr;
+              reject(err);
+            } else {
+              resolve({ stdout: stdout as any, stderr: stderr as any });
+            }
+          }
+        );
+
+        if (child.stdin) {
+          child.stdin.write(userPrompt);
+          child.stdin.end();
+        }
+      });
 
       if (this.debug) {
         console.log('[DEBUG] Raw Output:', result.stdout);
@@ -96,7 +118,7 @@ export class ClaudeCodeAdapter extends CLIAdapter {
       }
       if (this.debug) {
         const stderr: string = (error && error.stderr) || '';
-        console.warn('[DEBUG] Invocation failed (no fallback). stderr:', stderr);
+        console.warn('[DEBUG] Invocation failed. stderr:', stderr);
       }
       // Rethrow original error
       throw error;
