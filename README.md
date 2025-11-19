@@ -26,15 +26,18 @@ This adapter allows you to use local CLI tools like Claude Code as drop-in repla
 
 ## Demo
 
-See the adapter in action with [Open WebUI](examples/open-webui) - a ChatGPT-like web interface powered by Claude Code:
+Try the adapter with the minimal, dependency-free web client:
 
 ```bash
-cd examples/open-webui
-docker compose up -d
-# Open http://localhost:3000 in your browser
+# Start the adapter (project root)
+npm ci
+npm run build && npm start
+
+# Open the client in your browser
+# File path: examples/minimal-web-client/index.html
 ```
 
-[→ View Demo Documentation](examples/open-webui/README.md)
+[→ Minimal Web Client README](examples/minimal-web-client/README.md)
 
 ## Installation
 

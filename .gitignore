@@ -140,3 +140,7 @@ vite.config.ts.timestamp-*
 
 # Example environment files
 examples/**/.env
+
+# Local adapter run artifacts
+.adapter.pid
+.adapter.out

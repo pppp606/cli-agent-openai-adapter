@@ -9,7 +9,16 @@ const execFile = promisify(execFileCb);
 /**
  * System prompt for conversation context understanding
  */
-const CONVERSATION_SYSTEM_PROMPT = `You are participating in a conversation. When conversation history is provided in JSON format, use it to understand the context and respond appropriately to the current user message.`;
+const CONVERSATION_SYSTEM_PROMPT = `You are a general-purpose conversational assistant.
+
+Hard rules:
+- Do not reference, infer, or mention any local environment details (e.g., repository state, branch names, files, directories, OS, editor, terminal, processes, or network).
+- Do not claim to have run commands, opened files, or inspected the user’s environment. Provide guidance as suggestions only.
+- If the user provides environment information, do not broaden it by guessing other environment details. Answer strictly within the provided information.
+
+Conversation handling:
+- When conversation history is provided in JSON, use it to understand context and respond to the latest user message.
+- Keep responses concise and focused on the user’s request.`;
 
 /**
  * Custom error for timeout
@@ -64,31 +73,74 @@ export class ClaudeCodeAdapter extends CLIAdapter {
   async execute(messages: Message[]): Promise<string> {
     const { systemPrompt, userPrompt } = this.buildClaudeCodeCommand(messages);
 
+    const t0 = Date.now();
+
     if (this.debug) {
       console.log('[DEBUG] System Prompt:', systemPrompt);
       console.log('[DEBUG] User Prompt:', userPrompt);
     }
 
+    const commonOpts = {
+      cwd: this.runtimeDir,
+      timeout: this.timeout,
+      maxBuffer: 10 * 1024 * 1024, // 10MB
+    } as const;
+
+    // Primary invocation: current CLI (non-interactive):
+    // `claude --system-prompt <system> -p <userPrompt>`
     try {
-      const result = await execFile(
-        'claude',
-        ['code', '--model', this.model, '--system-prompt', systemPrompt, '-p', userPrompt],
-        {
-          cwd: this.runtimeDir,
-          timeout: this.timeout,
-          maxBuffer: 10 * 1024 * 1024, // 10MB
+      if (this.debug) {
+        console.log(
+          '[DEBUG] Exec command (stdin mode):',
+          'claude',
+          'code',
+          '--model',
+          this.model,
+          '--system-prompt',
+          quote(summarize(systemPrompt)),
+          '-p'
+        );
+        console.log('[DEBUG] Prompt (stdin):', quote(summarize(userPrompt)));
+      }
+
+      // Use stdin to pass the user prompt to avoid any quoting ambiguity
+      const result = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        const child = execFileCb(
+          'claude',
+          ['code', '--model', this.model, '--system-prompt', systemPrompt, '-p'],
+          commonOpts as any,
+          (err, stdout, stderr) => {
+            if (err) {
+              (err as any).stderr = stderr;
+              reject(err);
+            } else {
+              resolve({ stdout: stdout as any, stderr: stderr as any });
+            }
+          }
+        );
+
+        if (child.stdin) {
+          child.stdin.write(userPrompt);
+          child.stdin.end();
         }
-      );
+      });
 
       if (this.debug) {
         console.log('[DEBUG] Raw Output:', result.stdout);
+        console.log('[DEBUG] Duration (ms):', Date.now() - t0);
       }
 
       return this.cleanOutput(result.stdout);
     } catch (error: any) {
+      // If timed out, surface as timeout
       if (error.killed && error.signal === 'SIGTERM') {
         throw new TimeoutError('Claude Code execution timed out');
       }
+      if (this.debug) {
+        const stderr: string = (error && error.stderr) || '';
+        console.warn('[DEBUG] Invocation failed. stderr:', stderr);
+      }
+      // Rethrow original error
       throw error;
     }
   }
@@ -155,4 +207,19 @@ export class ClaudeCodeAdapter extends CLIAdapter {
 
     return cleaned;
   }
+
+}
+
+/**
+ * Summarize long prompts in debug logs to keep output readable
+ */
+function summarize(text: string, max = 80): string {
+  if (!text) return '';
+  const clean = text.replace(/\s+/g, ' ').trim();
+  return clean.length > max ? clean.slice(0, max) + '…' : clean;
+}
+
+function quote(s: string): string {
+  // Use JSON stringify to show quotes safely in logs
+  return JSON.stringify(s);
 }
