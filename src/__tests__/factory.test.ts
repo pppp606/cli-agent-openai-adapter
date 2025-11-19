@@ -10,6 +10,7 @@ describe('AdapterFactory', () => {
         runtimeDir: '/test/runtime',
         timeout: 30000,
         debug: false,
+        model: 'haiku',
       };
 
       const adapter = AdapterFactory.create(config);
@@ -25,6 +26,7 @@ describe('AdapterFactory', () => {
         runtimeDir: '/test/runtime',
         timeout: 30000,
         debug: false,
+        model: 'haiku',
       };
 
       expect(() => AdapterFactory.create(config)).toThrow('Codex adapter not yet implemented');
@@ -36,6 +38,7 @@ describe('AdapterFactory', () => {
         runtimeDir: '/test/runtime',
         timeout: 30000,
         debug: false,
+        model: 'haiku',
       };
 
       expect(() => AdapterFactory.create(config)).toThrow('Gemini CLI adapter not yet implemented');
@@ -47,6 +50,7 @@ describe('AdapterFactory', () => {
         runtimeDir: '/test/runtime',
         timeout: 30000,
         debug: false,
+        model: 'haiku',
       };
 
       expect(() => AdapterFactory.create(config)).toThrow('Unknown adapter type: unknown');

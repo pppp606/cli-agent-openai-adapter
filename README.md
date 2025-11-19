@@ -8,8 +8,10 @@ This adapter allows you to use local CLI tools like Claude Code as drop-in repla
 
 **Use Cases:**
 - **Production**: Use OpenAI API (pay per token)
-- **Development**: Use local Claude Code (reduce costs)
+- **Development**: Use local Claude Code with Haiku model (reduce costs)
 - **Same Code**: Switch between environments using the same API interface (e.g., LangChain's `ChatOpenAI`)
+
+**Default Model:** This adapter uses Claude Haiku by default for cost efficiency during development. You can configure a different model (e.g., Sonnet, Opus) via the `MODEL` environment variable.
 
 ## Features
 
@@ -76,6 +78,7 @@ Configure using environment variables:
 
 ```bash
 export ADAPTER_TYPE=claude-code  # Adapter to use
+export MODEL=haiku                # Claude model to use (default: haiku)
 export PORT=8000                  # Server port
 export HOST=localhost             # Server host
 export RUNTIME_DIR=./runtime      # Runtime directory (optional)
@@ -84,6 +87,8 @@ export DEBUG=true                 # Enable debug mode
 ```
 
 Or create a `.env` file (requires `dotenv`).
+
+**Note:** This adapter uses **Haiku** as the default model to reduce costs during development. You can change the model by setting the `MODEL` environment variable to `sonnet` or `opus` if needed.
 
 ### Example with LangChain
 

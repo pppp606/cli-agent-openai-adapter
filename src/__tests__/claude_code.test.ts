@@ -20,7 +20,7 @@ describe('ClaudeCodeAdapter', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    adapter = new ClaudeCodeAdapter('/test/runtime', 30000, false);
+    adapter = new ClaudeCodeAdapter('/test/runtime', 30000, false, 'haiku');
   });
 
   describe('getName', () => {
@@ -81,6 +81,9 @@ describe('ClaudeCodeAdapter', () => {
       expect(mockExecFile).toHaveBeenCalledWith(
         'claude',
         [
+          'code',
+          '--model',
+          'haiku',
           '--system-prompt',
           expect.any(String),
           '-p',
@@ -110,6 +113,9 @@ describe('ClaudeCodeAdapter', () => {
       expect(mockExecFile).toHaveBeenCalledWith(
         'claude',
         [
+          'code',
+          '--model',
+          'haiku',
           '--system-prompt',
           expect.stringContaining('You are a helpful assistant'),
           '-p',
@@ -139,6 +145,9 @@ describe('ClaudeCodeAdapter', () => {
       // With stdin mode, we can't assert the prompt position in args; verify flags only
       const callArgs = mockExecFile.mock.calls[0];
       expect(callArgs?.[1]).toEqual([
+        'code',
+        '--model',
+        'haiku',
         '--system-prompt',
         expect.any(String),
         '-p',
@@ -211,7 +220,7 @@ describe('ClaudeCodeAdapter', () => {
     });
 
     it('should log when debug is true', async () => {
-      const debugAdapter = new ClaudeCodeAdapter('/test/runtime', 30000, true);
+      const debugAdapter = new ClaudeCodeAdapter('/test/runtime', 30000, true, 'haiku');
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
       const messages: Message[] = [
         { role: 'user', content: 'Hello!' },
@@ -228,6 +237,29 @@ describe('ClaudeCodeAdapter', () => {
       expect(consoleSpy).toHaveBeenCalledWith('[DEBUG] User Prompt:', expect.any(String));
       expect(consoleSpy).toHaveBeenCalledWith('[DEBUG] Raw Output:', 'Response');
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('model configuration', () => {
+    it('should use specified model in execute command', async () => {
+      const sonnetAdapter = new ClaudeCodeAdapter('/test/runtime', 30000, false, 'sonnet');
+      const messages: Message[] = [
+        { role: 'user', content: 'Hello!' },
+      ];
+
+      mockExecFile.mockImplementation((file, args, options, callback: any) => {
+        callback(null, 'Response', '');
+        return {} as any;
+      });
+
+      await sonnetAdapter.execute(messages);
+
+      expect(mockExecFile).toHaveBeenCalledWith(
+        'claude',
+        expect.arrayContaining(['--model', 'sonnet']),
+        expect.any(Object),
+        expect.any(Function)
+      );
     });
   });
 });

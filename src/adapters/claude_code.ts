@@ -43,12 +43,14 @@ export class ClaudeCodeAdapter extends CLIAdapter {
   private runtimeDir: string;
   private timeout: number;
   private debug: boolean;
+  private model: string;
 
-  constructor(runtimeDir: string, timeout: number = 30000, debug: boolean = false) {
+  constructor(runtimeDir: string, timeout: number = 30000, debug: boolean = false, model: string = 'haiku') {
     super();
     this.runtimeDir = runtimeDir;
     this.timeout = timeout;
     this.debug = debug;
+    this.model = model;
   }
 
   getName(): string {
@@ -88,7 +90,16 @@ export class ClaudeCodeAdapter extends CLIAdapter {
     // `claude --system-prompt <system> -p <userPrompt>`
     try {
       if (this.debug) {
-        console.log('[DEBUG] Exec command (stdin mode):', 'claude', '--system-prompt', quote(summarize(systemPrompt)), '-p');
+        console.log(
+          '[DEBUG] Exec command (stdin mode):',
+          'claude',
+          'code',
+          '--model',
+          this.model,
+          '--system-prompt',
+          quote(summarize(systemPrompt)),
+          '-p'
+        );
         console.log('[DEBUG] Prompt (stdin):', quote(summarize(userPrompt)));
       }
 
@@ -96,7 +107,7 @@ export class ClaudeCodeAdapter extends CLIAdapter {
       const result = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
         const child = execFileCb(
           'claude',
-          ['--system-prompt', systemPrompt, '-p'],
+          ['code', '--model', this.model, '--system-prompt', systemPrompt, '-p'],
           commonOpts as any,
           (err, stdout, stderr) => {
             if (err) {

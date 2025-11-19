@@ -48,4 +48,5 @@ export interface AdapterConfig {
   runtimeDir: string;
   timeout: number;
   debug: boolean;
+  model?: string;
 }
