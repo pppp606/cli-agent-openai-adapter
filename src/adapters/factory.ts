@@ -9,7 +9,7 @@ export class AdapterFactory {
   static create(config: AdapterConfig): CLIAdapter {
     switch (config.type) {
       case 'claude-code':
-        return new ClaudeCodeAdapter(config.runtimeDir, config.timeout, config.debug);
+        return new ClaudeCodeAdapter(config.runtimeDir, config.timeout, config.debug, config.model);
       case 'codex':
         throw new Error('Codex adapter not yet implemented');
       case 'gemini-cli':
