@@ -6,6 +6,26 @@ Convert CLI-based AI agents (Claude Code, etc.) to OpenAI-compatible API endpoin
 
 This adapter allows you to use local CLI tools like Claude Code as drop-in replacements for OpenAI's API in your development environment, while keeping the same code structure for production.
 
+LangChain Demos
+- JavaScript/TypeScript (Node): see `examples/langchain-js`. Minimal usage:
+  ```ts
+  import { ChatOpenAI } from "@langchain/openai";
+  const llm = new ChatOpenAI({
+    apiKey: "dummy-key",
+    baseURL: "http://localhost:8000/v1",
+    model: "claude-code",
+  });
+  const resp = await llm.invoke("hi!");
+  console.log(resp.content);
+  ```
+
+- Python: see `examples/langchain-py`. Minimal usage:
+  ```py
+  from langchain_openai import ChatOpenAI
+  llm = ChatOpenAI(api_key="dummy-key", base_url="http://localhost:8000/v1", model="claude-code")
+  print(llm.invoke("hi!").content)
+  ```
+
 **Use Cases:**
 - **Production**: Use OpenAI API (pay per token)
 - **Development**: Use local Claude Code with Haiku model (reduce costs)
