@@ -34,12 +34,14 @@ export class ClaudeCodeAdapter extends CLIAdapter {
   private runtimeDir: string;
   private timeout: number;
   private debug: boolean;
+  private model: string;
 
-  constructor(runtimeDir: string, timeout: number = 30000, debug: boolean = false) {
+  constructor(runtimeDir: string, timeout: number = 30000, debug: boolean = false, model: string = 'haiku') {
     super();
     this.runtimeDir = runtimeDir;
     this.timeout = timeout;
     this.debug = debug;
+    this.model = model;
   }
 
   getName(): string {
@@ -70,7 +72,7 @@ export class ClaudeCodeAdapter extends CLIAdapter {
     try {
       const result = await execFile(
         'claude',
-        ['code', '--system-prompt', systemPrompt, '-p', userPrompt],
+        ['code', '--model', this.model, '--system-prompt', systemPrompt, '-p', userPrompt],
         {
           cwd: this.runtimeDir,
           timeout: this.timeout,

@@ -19,6 +19,7 @@ describe('Config', () => {
       delete process.env.RUNTIME_DIR;
       delete process.env.TIMEOUT;
       delete process.env.DEBUG;
+      delete process.env.MODEL;
 
       const config = loadConfig();
 
@@ -27,6 +28,7 @@ describe('Config', () => {
       expect(config.runtimeDir).toContain('claude-code');
       expect(config.timeout).toBe(30000);
       expect(config.debug).toBe(false);
+      expect(config.model).toBe('haiku');
     });
 
     it('should load configuration from environment variables', () => {
@@ -34,6 +36,7 @@ describe('Config', () => {
       process.env.RUNTIME_DIR = '/custom/runtime';
       process.env.TIMEOUT = '60000';
       process.env.DEBUG = 'true';
+      process.env.MODEL = 'sonnet';
 
       const config = loadConfig();
 
@@ -41,6 +44,7 @@ describe('Config', () => {
       expect(config.runtimeDir).toBe('/custom/runtime');
       expect(config.timeout).toBe(60000);
       expect(config.debug).toBe(true);
+      expect(config.model).toBe('sonnet');
     });
 
     it('should handle invalid timeout gracefully', () => {

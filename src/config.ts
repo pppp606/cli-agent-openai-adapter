@@ -9,12 +9,14 @@ export function loadConfig(): AdapterConfig {
   const runtimeDir = process.env.RUNTIME_DIR || path.join(__dirname, '..', 'runtime', 'claude-code');
   const timeout = parseInt(process.env.TIMEOUT || '30000', 10);
   const debug = process.env.DEBUG === 'true';
+  const model = process.env.MODEL || 'haiku';
 
   return {
     type: adapterType,
     runtimeDir,
     timeout,
     debug,
+    model,
   };
 }
 

@@ -20,7 +20,7 @@ describe('ClaudeCodeAdapter', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    adapter = new ClaudeCodeAdapter('/test/runtime', 30000, false);
+    adapter = new ClaudeCodeAdapter('/test/runtime', 30000, false, 'haiku');
   });
 
   describe('getName', () => {
@@ -81,6 +81,8 @@ describe('ClaudeCodeAdapter', () => {
         'claude',
         [
           'code',
+          '--model',
+          'haiku',
           '--system-prompt',
           expect.stringContaining('participating in a conversation'),
           '-p',
@@ -112,6 +114,8 @@ describe('ClaudeCodeAdapter', () => {
         'claude',
         [
           'code',
+          '--model',
+          'haiku',
           '--system-prompt',
           expect.stringContaining('You are a helpful assistant'),
           '-p',
@@ -140,7 +144,7 @@ describe('ClaudeCodeAdapter', () => {
 
       // Check that conversation history is included
       const callArgs = mockExecFile.mock.calls[0];
-      const userPrompt = callArgs?.[1]?.[4]; // -p argument value
+      const userPrompt = callArgs?.[1]?.[6]; // -p argument value (index changed due to --model option)
       expect(userPrompt).toContain('Conversation history:');
       expect(userPrompt).toContain('My favorite color is blue');
       expect(userPrompt).toContain('That is nice!');
@@ -216,7 +220,7 @@ describe('ClaudeCodeAdapter', () => {
     });
 
     it('should log when debug is true', async () => {
-      const debugAdapter = new ClaudeCodeAdapter('/test/runtime', 30000, true);
+      const debugAdapter = new ClaudeCodeAdapter('/test/runtime', 30000, true, 'haiku');
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
       const messages: Message[] = [
         { role: 'user', content: 'Hello!' },
@@ -233,6 +237,29 @@ describe('ClaudeCodeAdapter', () => {
       expect(consoleSpy).toHaveBeenCalledWith('[DEBUG] User Prompt:', expect.any(String));
       expect(consoleSpy).toHaveBeenCalledWith('[DEBUG] Raw Output:', 'Response');
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('model configuration', () => {
+    it('should use specified model in execute command', async () => {
+      const sonnetAdapter = new ClaudeCodeAdapter('/test/runtime', 30000, false, 'sonnet');
+      const messages: Message[] = [
+        { role: 'user', content: 'Hello!' },
+      ];
+
+      mockExecFile.mockImplementation((file, args, options, callback: any) => {
+        callback(null, { stdout: 'Response', stderr: '' });
+        return {} as any;
+      });
+
+      await sonnetAdapter.execute(messages);
+
+      expect(mockExecFile).toHaveBeenCalledWith(
+        'claude',
+        expect.arrayContaining(['--model', 'sonnet']),
+        expect.any(Object),
+        expect.any(Function)
+      );
     });
   });
 });
