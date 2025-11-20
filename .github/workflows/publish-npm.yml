@@ -1,0 +1,104 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify build artifacts
+        run: |
+          if [ ! -f "dist/index.js" ]; then
+            echo "Error: dist/index.js not found"
+            exit 1
+          fi
+          if [ ! -f "dist/index.d.ts" ]; then
+            echo "Error: dist/index.d.ts not found"
+            exit 1
+          fi
+          echo "Build artifacts verified successfully"
+
+      - name: Check OIDC environment
+        id: oidc-check
+        run: |
+          if [ -n "${{ env.ACTIONS_ID_TOKEN_REQUEST_URL }}" ] && [ -n "${{ env.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}" ]; then
+            echo "oidc_available=true" >> $GITHUB_OUTPUT
+            echo "✓ OIDC authentication available"
+          else
+            echo "oidc_available=false" >> $GITHUB_OUTPUT
+            echo "⚠ OIDC not available, will use NPM_TOKEN"
+          fi
+
+      - name: Publish to npm (with OIDC)
+        if: steps.oidc-check.outputs.oidc_available == 'true'
+        run: |
+          echo "Publishing with OIDC authentication and provenance..."
+          npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm (with NPM_TOKEN)
+        if: steps.oidc-check.outputs.oidc_available != 'true'
+        run: |
+          echo "⚠ Publishing with NPM_TOKEN (legacy method)"
+          echo "Consider setting up OIDC for enhanced security. See docs/OIDC-SETUP.md"
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5febab978c50f0dd30 # v1.1.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## Installation
+            ```bash
+            npm install cli-agent-openai-adapter@${{ steps.get_version.outputs.VERSION }}
+            ```
+
+            ## What's Changed
+            See the [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+          draft: false
+          prerelease: false

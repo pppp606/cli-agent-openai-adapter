@@ -15,7 +15,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
     "claude",
@@ -28,6 +29,19 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pppp606/cli-agent-openai-adapter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pppp606/cli-agent-openai-adapter/issues"
+  },
+  "homepage": "https://github.com/pppp606/cli-agent-openai-adapter#readme",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
