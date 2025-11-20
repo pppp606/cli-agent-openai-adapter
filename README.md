@@ -1,6 +1,6 @@
 # cli-agent-openai-adapter
 
-Convert CLI-based AI agents (Claude Code, etc.) to OpenAI-compatible API endpoints.
+Convert CLI-based AI agents (Claude Code, etc.) to OpenAI ChatAPI endpoints.
 
 ## Overview
 
