@@ -6,10 +6,27 @@ import path from 'path';
  */
 export function loadConfig(): AdapterConfig {
   const adapterType = (process.env.ADAPTER_TYPE || 'claude-code') as AdapterConfig['type'];
-  const runtimeDir = process.env.RUNTIME_DIR || path.join(__dirname, '..', 'runtime', 'claude-code');
+
+  // Set default runtime directory based on adapter type
+  let defaultRuntimeDir: string;
+  let defaultModel: string;
+
+  switch (adapterType) {
+    case 'gemini-cli':
+      defaultRuntimeDir = path.join(__dirname, '..', 'runtime', 'gemini-cli');
+      defaultModel = 'gemini-2.5-flash';
+      break;
+    case 'claude-code':
+    default:
+      defaultRuntimeDir = path.join(__dirname, '..', 'runtime', 'claude-code');
+      defaultModel = 'haiku';
+      break;
+  }
+
+  const runtimeDir = process.env.RUNTIME_DIR || defaultRuntimeDir;
   const timeout = parseInt(process.env.TIMEOUT || '30000', 10);
   const debug = process.env.DEBUG === 'true';
-  const model = process.env.MODEL || 'haiku';
+  const model = process.env.MODEL || defaultModel;
 
   return {
     type: adapterType,

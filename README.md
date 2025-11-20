@@ -1,28 +1,28 @@
 # cli-agent-openai-adapter
 
-Convert CLI-based AI agents (Claude Code, etc.) to OpenAI ChatAPI endpoints.
+Convert CLI-based AI agents (Claude Code, Gemini CLI, etc.) to OpenAI ChatAPI endpoints.
 
 ## Overview
 
-This adapter allows you to use local CLI tools like Claude Code as drop-in replacements for OpenAI's API in your development environment, while keeping the same code structure for production.
+This adapter allows you to use local CLI tools like Claude Code or Gemini CLI as drop-in replacements for OpenAI's API in your development environment, while keeping the same code structure for production.
 
 **Use Cases:**
 - **Production**: Use OpenAI API (pay per token)
-- **Development**: Use local Claude Code with Haiku model (reduce costs)
+- **Development**: Use local Claude Code with Haiku model or Gemini CLI with free tier (reduce costs)
 - **Same Code**: Switch between environments using the same API interface (e.g., LangChain's `ChatOpenAI`)
 
-**Default Model:** This adapter uses Claude Haiku by default for cost efficiency during development. You can configure a different model (e.g., Sonnet, Opus) via the `MODEL` environment variable.
+**Default Model:** This adapter uses Claude Haiku by default for Claude Code. For Gemini CLI, it uses gemini-2.5-flash. You can configure a different model via the `MODEL` environment variable.
 
 ## Features
 
 - ✅ OpenAI-compatible API endpoints (`/v1/chat/completions`)
 - ✅ Support for conversation history
 - ✅ Stateless execution (like OpenAI API)
-- ✅ Chat-only mode (tools disabled for safety)
+- ✅ Chat-only mode (tools disabled for safety in Claude Code)
 - ✅ TypeScript with full type definitions
-- 🚧 Claude Code adapter (initial implementation)
+- ✅ Claude Code adapter
+- ✅ Gemini CLI adapter
 - 🔜 Codex adapter (future)
-- 🔜 Gemini CLI adapter (future)
 
 ## Demo
 
@@ -54,12 +54,20 @@ npx cli-agent-openai-adapter
 ## Prerequisites
 
 - Node.js >= 20.0.0
-- Claude Code CLI installed and accessible in PATH
+- One of the following CLI tools installed and accessible in PATH:
+  - **Claude Code CLI** (for `claude-code` adapter)
+  - **Gemini CLI** (for `gemini-cli` adapter)
 
-To verify Claude Code is installed:
+To verify the CLI is installed:
 
 ```bash
+# For Claude Code
 claude --version
+
+# For Gemini CLI
+gemini --version
+# or
+gemini -p "hello"
 ```
 
 ## Usage
@@ -77,18 +85,28 @@ By default, the server starts at `http://localhost:8000`.
 Configure using environment variables:
 
 ```bash
-export ADAPTER_TYPE=claude-code  # Adapter to use
-export MODEL=haiku                # Claude model to use (default: haiku)
-export PORT=8000                  # Server port
-export HOST=localhost             # Server host
-export RUNTIME_DIR=./runtime      # Runtime directory (optional)
-export TIMEOUT=30000              # Timeout in milliseconds
-export DEBUG=true                 # Enable debug mode
+export ADAPTER_TYPE=claude-code  # Adapter to use: 'claude-code' or 'gemini-cli'
+export MODEL=haiku               # Model to use (default: 'haiku' for Claude, 'gemini-2.5-flash' for Gemini)
+export PORT=8000                 # Server port
+export HOST=localhost            # Server host
+export RUNTIME_DIR=./runtime     # Runtime directory (optional)
+export TIMEOUT=30000             # Timeout in milliseconds
+export DEBUG=true                # Enable debug mode
 ```
 
 Or create a `.env` file (requires `dotenv`).
 
-**Note:** This adapter uses **Haiku** as the default model to reduce costs during development. You can change the model by setting the `MODEL` environment variable to `sonnet` or `opus` if needed.
+**Adapter-specific defaults:**
+- **Claude Code**: Default model is `haiku`. You can use `sonnet`, `opus`, etc.
+- **Gemini CLI**: Default model is `gemini-2.5-flash`. You can use `gemini-2.5-pro`, etc.
+
+**Example for Gemini CLI:**
+```bash
+export ADAPTER_TYPE=gemini-cli
+export MODEL=gemini-2.5-flash
+# Set GEMINI_API_KEY if using API key authentication
+export GEMINI_API_KEY=your-api-key
+```
 
 ### Example with LangChain
 
@@ -96,11 +114,21 @@ Or create a `.env` file (requires `dotenv`).
 import { ChatOpenAI } from "@langchain/openai";
 
 // Development environment: via cli-agent-openai-adapter
-const llmDev = new ChatOpenAI({
+// Using Claude Code adapter
+const llmClaudeDev = new ChatOpenAI({
   configuration: {
     baseURL: "http://localhost:8000/v1"
   },
   modelName: "claude-code",
+  apiKey: "dummy" // Not used but required by the SDK
+});
+
+// Using Gemini CLI adapter
+const llmGeminiDev = new ChatOpenAI({
+  configuration: {
+    baseURL: "http://localhost:8000/v1"
+  },
+  modelName: "gemini-cli",
   apiKey: "dummy" // Not used but required by the SDK
 });
 
@@ -111,7 +139,7 @@ const llmProd = new ChatOpenAI({
 });
 
 // Usage is identical
-const response = await llmDev.invoke("Hello!");
+const response = await llmClaudeDev.invoke("Hello!");
 console.log(response.content);
 ```
 
@@ -126,7 +154,7 @@ const client = new OpenAI({
 });
 
 const response = await client.chat.completions.create({
-  model: "claude-code",
+  model: "claude-code", // or "gemini-cli"
   messages: [
     { role: "system", content: "You are a helpful assistant." },
     { role: "user", content: "Hello!" }
@@ -279,6 +307,24 @@ which claude
 claude --version
 ```
 
+### Gemini CLI not found
+
+**Error:** `gemini-cli is not available`
+
+**Solution:** Make sure Gemini CLI is installed and accessible:
+
+```bash
+# Check if gemini is in PATH
+which gemini
+
+# Try running gemini directly
+gemini --version
+# or
+gemini -p "hello"
+```
+
+**Installation:** Follow the installation instructions at https://github.com/google-gemini/gemini-cli
+
 ### Timeout errors
 
 **Error:** `Claude Code execution timed out`
@@ -358,12 +404,12 @@ cli-agent-openai-adapter/
 
 - [ ] Support for streaming responses
 - [ ] Support for Codex CLI adapter
-- [ ] Support for Gemini CLI adapter
 - [ ] Configuration file support (.adaprc)
 - [ ] Better token estimation
 - [ ] Conversation history truncation/summarization
 - [ ] Logging and metrics
 - [ ] Docker support
+- [ ] Enhanced Gemini CLI features (MCP, checkpointing, etc.)
 
 ## License and Terms
 

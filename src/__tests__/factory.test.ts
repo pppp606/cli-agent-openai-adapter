@@ -1,5 +1,6 @@
 import { AdapterFactory } from '../adapters/factory';
 import { ClaudeCodeAdapter } from '../adapters/claude_code';
+import { GeminiCLIAdapter } from '../adapters/gemini_cli';
 import { AdapterConfig } from '../types';
 
 describe('AdapterFactory', () => {
@@ -32,16 +33,20 @@ describe('AdapterFactory', () => {
       expect(() => AdapterFactory.create(config)).toThrow('Codex adapter not yet implemented');
     });
 
-    it('should throw error for gemini-cli type (not yet implemented)', () => {
+    it('should create GeminiCLIAdapter for gemini-cli type', () => {
       const config: AdapterConfig = {
         type: 'gemini-cli',
         runtimeDir: '/test/runtime',
         timeout: 30000,
         debug: false,
-        model: 'haiku',
+        model: 'gemini-2.5-flash',
       };
 
-      expect(() => AdapterFactory.create(config)).toThrow('Gemini CLI adapter not yet implemented');
+      const adapter = AdapterFactory.create(config);
+
+      expect(adapter).toBeInstanceOf(GeminiCLIAdapter);
+      expect(adapter.getName()).toBe('gemini-cli');
+      expect(adapter.getModelName()).toBe('gemini-cli');
     });
 
     it('should throw error for unknown adapter type', () => {

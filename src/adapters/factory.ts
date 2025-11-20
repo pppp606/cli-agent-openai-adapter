@@ -1,5 +1,6 @@
 import { CLIAdapter } from './base';
 import { ClaudeCodeAdapter } from './claude_code';
+import { GeminiCLIAdapter } from './gemini_cli';
 import { AdapterConfig } from '../types';
 
 /**
@@ -13,7 +14,7 @@ export class AdapterFactory {
       case 'codex':
         throw new Error('Codex adapter not yet implemented');
       case 'gemini-cli':
-        throw new Error('Gemini CLI adapter not yet implemented');
+        return new GeminiCLIAdapter(config.runtimeDir, config.timeout, config.debug, config.model);
       default:
         throw new Error(`Unknown adapter type: ${config.type}`);
     }
